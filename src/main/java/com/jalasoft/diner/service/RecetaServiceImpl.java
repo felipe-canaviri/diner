@@ -1,6 +1,5 @@
 package com.jalasoft.diner.service;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,28 +30,7 @@ public class RecetaServiceImpl implements RecetaService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecetaServiceImpl.class);
 	
 	@Override
-	@Transactional
 	public Integer save(Receta receta) {
-		return recetaDao.save(receta);
-	}
-	
-	@Override
-	@Transactional
-	public Integer save(String nombreReceta, String nombreInsumo, Double cantidad) {
-		
-		Insumo insumo = insumoDao.findByName(nombreInsumo);
-		if (insumo == null) {
-			return null;
-		}
-		
-		IngredientePK pk = new IngredientePK();
-		pk.setInsumoId(insumo);
-		Ingrediente ingrediente = new Ingrediente();
-		ingrediente.setId(pk);
-		ingrediente.setCantidadUsada(cantidad);
-		
-		Receta receta = new Receta(nombreReceta, new HashSet<Ingrediente>(Arrays.asList(ingrediente)));
-		
 		return recetaDao.save(receta);
 	}
 	

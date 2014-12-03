@@ -35,6 +35,7 @@ public class IngredienteServiceTest {
 	
 	@Test
 	public void testFindByName() {
+		
 		Ingrediente ingrediente = service.findByName("Leche");
 		
 		assertNotNull(ingrediente);

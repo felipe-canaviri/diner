@@ -22,11 +22,13 @@ public class InsumoServiceImpl implements InsumoService {
 	}
 
 	@Override
+	@Transactional
 	public List<Insumo> findAll() {
 		return insumoDao.findAll();
 	}
 
 	@Override
+	@Transactional
 	public Insumo findById(Integer id) {
 		return insumoDao.get(id);
 	}

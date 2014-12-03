@@ -1,10 +1,5 @@
 package com.jalasoft.diner.service;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,15 +7,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class RecetaServiceTest {
+public class ExcelReaderServiceTest {
 
-	private RecetaService recetaService;
 	private ApplicationContext applicationContext;
+	private ExcelReaderService excelReaderService;
 	
 	@Before
 	public void setup() {
 		applicationContext = new ClassPathXmlApplicationContext( "classpath:applicationTestContext.xml" );
-		recetaService = (RecetaService)applicationContext.getBean("recetaService");
+		excelReaderService = (ExcelReaderService)applicationContext.getBean("excelReaderService");
 	}
 	
 	@After
@@ -31,11 +26,11 @@ public class RecetaServiceTest {
 	}
 	
 	@Test
-	public void testSave() {
-		Map<String, Double> ingredientes = new HashMap<String, Double>();
-		ingredientes.put("Leche", 0.5);
-		Integer recetaId = recetaService.save("Pancake", ingredientes);
-		
-		assertNotNull(recetaId);
+	public void testReadFileWithName() {
+		try {
+			excelReaderService.readFileWithName("RECETAS_Y_PRODUCCIONES_AGOSTO_2014.xlsx");
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 	}
 }
