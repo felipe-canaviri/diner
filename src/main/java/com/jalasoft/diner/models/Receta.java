@@ -15,9 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -36,6 +34,19 @@ public class Receta implements Serializable {
 	private String nombre;
 
 	private Set<Ingrediente> ingredientes = new HashSet<>();
+
+	public Receta(String nombre, Set<Ingrediente> ingredientes) {
+		
+		if (ingredientes == null || ingredientes.size() <= 0) {
+			throw new RuntimeException();
+		}
+		
+		this.nombre = nombre;
+		this.ingredientes = ingredientes;
+		for (Ingrediente ingrediente : ingredientes) {
+			ingrediente.getId().setRecetaId(this);
+		}
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,10 +75,9 @@ public class Receta implements Serializable {
 		this.nombre = nombre;
 	}
 
-	 @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-	 @JoinTable(name="receta_ingredientes",
-	 			joinColumns={@JoinColumn(name= "recetaId")},
-				inverseJoinColumns={@JoinColumn(name="ingredienteId")})
+	 @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, mappedBy = "id.recetaId")
+	 @Basic(optional = false)
+	 @Column(nullable = false)
 	 public Set<Ingrediente> getIngredientes() {
 		 return ingredientes;
 	 }
@@ -75,6 +85,7 @@ public class Receta implements Serializable {
 		 this.ingredientes = ingredientes;
 	 }
 	 public void addIngrediente(Ingrediente ingrediente) {
+		 ingrediente.getId().setRecetaId(this);
 		 this.ingredientes.add(ingrediente);
 	 }
 	
@@ -109,4 +120,13 @@ public class Receta implements Serializable {
 		return true;
 	}
 
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		for (Ingrediente ing : ingredientes) {
+			buffer.append(ing.toString());
+			buffer.append(", ");
+		}
+		
+		return nombre + " [" + buffer.toString() + "]";
+	}
 }

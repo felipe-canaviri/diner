@@ -20,7 +20,7 @@ public class IngredienteDaoImpl extends GenericHibernateDaoImpl<Ingrediente, Int
 	}
 	
 	public Ingrediente findByName(String name) {
-		Criterion byName = Restrictions.ilike("nombre", name + "%");
+		Criterion byName = Restrictions.ilike("insumo.nombre", name + "%");
 		List<Ingrediente> ingredientes = findByCriteria(byName);
 		
 		if (ingredientes.size() == 0) {

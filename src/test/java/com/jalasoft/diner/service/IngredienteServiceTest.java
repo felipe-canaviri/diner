@@ -1,7 +1,6 @@
 package com.jalasoft.diner.service;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,23 +30,6 @@ public class IngredienteServiceTest {
 	public void tearDown() {
 		if (applicationContext != null) {
 			((ConfigurableApplicationContext)applicationContext).close();
-		}
-	}
-	
-	@Test
-	public void testSave() {
-		Ingrediente ingrediente = new Ingrediente();
-		ingrediente.setNombre("Leche");
-		ingrediente.setUnidadMedida("Lt");
-		
-		Integer id = null;
-				
-		try {
-			id = service.save(ingrediente);
-			assertNotNull(id);
-			assertTrue(id > 0);
-		} catch (Exception e) {
-			LOGGER.error("Error when storing an Ingrediente: " + ingrediente.toString(), e);
 		}
 	}
 	
