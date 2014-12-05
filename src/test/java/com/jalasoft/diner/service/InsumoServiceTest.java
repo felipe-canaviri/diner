@@ -53,9 +53,9 @@ public class InsumoServiceTest {
 	
 	@Test
 	public void findByName() {
-		Insumo insumo = service.findByName("Leche");
+		Insumo insumo = service.findByName("tomate");
 		
 		assertNotNull(insumo);
-		assertEquals("Leche", insumo.getNombre());
+		assertEquals("tomate", insumo.getNombre());
 	}
 }

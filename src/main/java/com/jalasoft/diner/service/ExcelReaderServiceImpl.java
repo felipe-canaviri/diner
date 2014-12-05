@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -37,6 +36,7 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExcelReaderServiceImpl.class);
 
+	@Transactional
 	public void readRecetasFromSheet(XSSFSheet sheet) {
 
 		// Iterate through each rows one by one
@@ -48,7 +48,7 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
 
-			String nombreProducto = row.getCell(4).getStringCellValue();
+			String nombreProducto = row.getCell(4).getStringCellValue().trim();
 			if (nombreProducto.equals("Producto")) {
 				// no estamos interesados en almacenar el header de la columna
 				// de productos
@@ -64,13 +64,18 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 				productoActual = nombreProducto;
 			}
 
-			Cell insumoCell = row.getCell(5);
-			Cell usedQuantityCell = row.getCell(6);
+			String insumoCell = row.getCell(5).getStringCellValue().trim();
+			Double usedQuantityCell = row.getCell(6).getNumericCellValue();
 			//Cell unitMeasurementCell = row.getCell(7);
 
+			if (insumoCell == null || "".equals(insumoCell)) {
+				LOGGER.warn(String.format("The cell '%s' contains a null value for product", row.getRowNum()));
+				continue;
+			}
+			
 			//saveInsumo(insumoCell.getStringCellValue(), unitMeasurementCell.getStringCellValue());
 
-			ingredientes.put(insumoCell.getStringCellValue(), usedQuantityCell.getNumericCellValue());
+			ingredientes.put(sanitizeName(insumoCell.toLowerCase()), usedQuantityCell);
 			// ingredientes.add(new Ingrediente(insumo,
 			// usedQuantityCell.getNumericCellValue()));
 
@@ -82,6 +87,7 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		// Iterate through each rows one by one
 		Iterator<Row> rowIterator = sheet.iterator();
 
+		Map<String, String> insumos = new HashMap<String, String>();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
 
@@ -92,14 +98,29 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 				continue;
 			}
 
-			Cell insumoCell = row.getCell(5);
-			Cell unitMeasurementCell = row.getCell(7);
+			String insumoCell = row.getCell(5).getStringCellValue().trim();
+			String unitMeasurementCell = row.getCell(7).getStringCellValue().trim();
 
-			saveInsumo(insumoCell.getStringCellValue(), unitMeasurementCell.getStringCellValue());
+			if (insumoCell == null || "".equals(insumoCell)) {
+				LOGGER.warn(String.format("The cell '%s' contains a null value for product", row.getRowNum()));
+				continue;
+			}
+			
+			insumos.put(sanitizeName(insumoCell.toLowerCase()), unitMeasurementCell);
 		}
+		
+		saveInsumos(insumos);
+		LOGGER.info("Closing the method..");
 	}
 
-	@Transactional
+	private String sanitizeName(String original) {
+		if (original.contains("ñ")) {
+			return original.replace("ñ", "ni");
+		}
+		
+		return original;
+	}
+	
 	public void readFileWithName(String filename) {
 		try {
 			FileInputStream fileInputStream = new FileInputStream(new File(filename));
@@ -123,12 +144,20 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 	private Integer saveRecetaWithIngredientes(String nombreReceta, Map<String, Double> insumoCantidades) {
 
 		if (nombreReceta == null || nombreReceta.equals("")) {
+			LOGGER.warn("It was tried to store a Receta with empty name. Ignore this request.");
 			return -1;
 		}
 
 		Set<Ingrediente> ingredientes = asIngredientes(insumoCantidades);
+		
+		if (insumoCantidades.size() <= 0) {
+			LOGGER.warn(String.format("It was tried to store a Receta '%s' with no ingredientes. Ignore this request.", nombreReceta));
+			return -1;
+		}
 
 		Receta receta = new Receta(nombreReceta, ingredientes);
+		
+		LOGGER.info(String.format("Create Receta with name '%s' and ingredientes: %s", nombreReceta, ingredientes.toString()));
 
 		return recetaDao.save(receta);
 	}
@@ -140,6 +169,7 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 
 		Set<Ingrediente> ingredientes = new HashSet<>();
 		for (Map.Entry<String, Double> entry : insumoCantidades.entrySet()) {
+			LOGGER.info(String.format("Recover insumo with name '%s'",entry.getKey()));
 			Insumo insumo = insumoDao.findByName(entry.getKey());
 			if (insumo == null) {
 				LOGGER.warn(String.format("Invalid '%s' as insumo. Ignore this item as ingrediente.", entry.getKey()));
@@ -158,12 +188,29 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		return ingredientes;
 	}
 
-	private Integer saveInsumo(String insumoNombre, String unidadMedida) {
+	public boolean saveInsumos(Map<String, String> insumos) {
+		
+		for (Map.Entry<String, String> insumo : insumos.entrySet()) {
+			saveInsumo(insumo.getKey(), insumo.getValue());
+		}
+		
+		return true;
+	}
+	
+	public Integer saveInsumo(String insumoNombre, String unidadMedida) {
 		try {
 			Insumo insumo = new Insumo();
-			insumo.setNombre(insumoNombre);
+			insumo.setNombre(insumoNombre.toLowerCase());
 			insumo.setUnidadDeMedida(unidadMedida);
-			return insumoDao.save(insumo);
+			Integer newId = insumoDao.save(insumo);
+			
+			if (newId == null) {
+				LOGGER.error(String.format("Error when storing '%s' - '%s'", insumoNombre, unidadMedida));
+				throw new RuntimeException();
+			}
+			
+			return newId;
+			
 		} catch (ConstraintViolationException e) {
 			LOGGER.warn(String.format("Already exists an Insumo with name '%s'. Ignore the current one. ", insumoNombre));
 		} catch (Exception e) {
@@ -173,4 +220,6 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 
 		return -1;
 	}
+	
+	
 }

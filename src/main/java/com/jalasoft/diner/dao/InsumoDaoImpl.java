@@ -20,7 +20,7 @@ public class InsumoDaoImpl extends GenericHibernateDaoImpl<Insumo, Integer> impl
 	}
 	
 	public Insumo findByName(String name) {
-		Criterion byName = Restrictions.ilike("nombre", name + "%");
+		Criterion byName = Restrictions.eq("nombre", name);
 		List<Insumo> insumos = findByCriteria(byName);
 		
 		if (insumos.size() == 0) {

@@ -40,7 +40,7 @@ public class Ingrediente implements Serializable {
 	}
 
 	public String toString() {
-		return String.format("[Id: %s, Nombre: %s, CantidadUsada: %s%s]", this.id, 
+		return String.format("[Nombre: %s, CantidadUsada: %s%s]", 
 				this.id.getInsumoId().getNombre(), this.cantidadUsada, this.id.getInsumoId().getUnidadDeMedida());
 	}
 
