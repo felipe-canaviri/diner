@@ -1,9 +1,11 @@
 package com.jalasoft.diner.service;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,6 +13,8 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.jalasoft.diner.models.Receta;
 
 public class RecetaServiceTest {
 
@@ -37,5 +41,13 @@ public class RecetaServiceTest {
 		Integer recetaId = recetaService.save("Pancake", ingredientes);
 		
 		assertNotNull(recetaId);
+	}
+	
+	@Test
+	public void testFindByName() {
+		Set<Receta> recetas  = recetaService.findByName("Llaju");
+		
+		assertNotNull(recetas);
+		assertTrue(recetas.size() >= 1);
 	}
 }

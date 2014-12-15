@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,5 +59,13 @@ public class InsumoServiceTest {
 		
 		assertNotNull(insumo);
 		assertEquals("tomate", insumo.getNombre());
+	}
+	
+	@Test 
+	public void findByNameLength() {
+		List<Insumo> insumos = service.findByNameLength();
+		
+		assertNotNull(insumos);
+		assertTrue(insumos.size() > 0);
 	}
 }

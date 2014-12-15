@@ -35,6 +35,9 @@ public class Receta implements Serializable {
 
 	private Set<Ingrediente> ingredientes = new HashSet<>();
 
+	public Receta() {
+	}
+	
 	public Receta(String nombre, Set<Ingrediente> ingredientes) {
 		
 		if (ingredientes == null || ingredientes.size() <= 0) {

@@ -10,4 +10,6 @@ public interface InsumoService {
 	List<Insumo> findAll();
 	Insumo findById(Integer id);
 	Insumo findByName(String name);
+	
+	List<Insumo> findByNameLength();
 }

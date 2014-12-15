@@ -2,6 +2,7 @@ package com.jalasoft.diner.dao;
 
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
@@ -33,5 +34,16 @@ public class InsumoDaoImpl extends GenericHibernateDaoImpl<Insumo, Integer> impl
 		}
 		
 		return insumos.get(0);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Insumo> findByNameLength() {
+		
+		Criteria criteria = this.getSession().createCriteria(Insumo.class, "ii")
+				.add(Restrictions.sqlRestriction("CHAR_LENGTH(nombre) <= 8"))
+				.add(Restrictions.sqlRestriction("CHAR_LENGTH(nombre) >= 6"));
+		
+		return criteria.list();
 	}
 }

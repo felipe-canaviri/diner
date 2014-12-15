@@ -38,4 +38,10 @@ public class InsumoServiceImpl implements InsumoService {
 	public Insumo findByName(String name) {
 		return insumoDao.findByName(name);
 	}
+	
+	@Override
+	@Transactional
+	public List<Insumo> findByNameLength() {
+		return insumoDao.findByNameLength();
+	}
 }

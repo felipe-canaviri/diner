@@ -57,6 +57,12 @@ public class RecetaServiceImpl implements RecetaService {
 		return recetaDao.get(id);
 	}
 	
+	@Override
+	@Transactional
+	public Set<Receta> findByName(String name) {
+		return recetaDao.findByName(name);
+	}
+	
 	private Set<Ingrediente> asIngredientes(Map<String, Double> insumoCantidades) {
 		if (insumoCantidades == null || insumoCantidades.size() <= 0) {
 			return new HashSet<Ingrediente>();
