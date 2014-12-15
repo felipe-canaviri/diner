@@ -58,7 +58,6 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 
 			if (!productoActual.equals(nombreProducto)) {
 
-//				saveRecetaWithIngredientes(productoActual, ingredientes);
 				LOGGER.info(String.format("Create a new Receta with name '%s'", productoActual));
 				Set<Ingrediente> ingredientes = asIngredientes(insumos);
 				if (ingredientes.size() <= 0) {
@@ -117,7 +116,10 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 				continue;
 			}
 
+			LOGGER.info(String.format("Read Insumo Cell with value '%s'", row.getCell(5).getStringCellValue()));
+			
 			String insumoCell = row.getCell(5).getStringCellValue().trim();
+			insumoCell = insumoCell.toLowerCase();
 			String unitMeasurementCell = row.getCell(7).getStringCellValue().trim();
 			Double precioUnitarioCompraCell = row.getCell(8).getNumericCellValue();
 
@@ -133,13 +135,6 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		LOGGER.info("Closing the method..");
 	}
 
-//	private String sanitizeName(String original) {
-//		if (original.contains("ñ")) {
-//			return original.replace("ñ", "ni");
-//		}
-//		
-//		return original;
-//	}
 	
 	public void readFileWithName(String filename) {
 		try {
@@ -150,7 +145,7 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 			XSSFSheet sheet = workbook.getSheet("RECETAS");
 
 			collectAllInsumos(sheet);
-			//readRecetasFromSheet(sheet);
+			readRecetasFromSheet(sheet);
 
 			fileInputStream.close();
 
@@ -161,26 +156,6 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		}
 	}
 
-	private Integer saveRecetaWithIngredientes(String nombreReceta, Map<String, Double> insumoCantidades) {
-
-		if (nombreReceta == null || nombreReceta.equals("")) {
-			LOGGER.warn("It was tried to store a Receta with empty name. Ignore this request.");
-			return -1;
-		}
-
-		Set<Ingrediente> ingredientes = asIngredientes(insumoCantidades);
-		
-		if (insumoCantidades.size() <= 0) {
-			LOGGER.warn(String.format("It was tried to store a Receta '%s' with no ingredientes. Ignore this request.", nombreReceta));
-			return -1;
-		}
-
-		Receta receta = new Receta(nombreReceta, ingredientes);
-		
-		LOGGER.info(String.format("Create Receta with name '%s' and ingredientes: %s", nombreReceta, ingredientes.toString()));
-
-		return recetaDao.save(receta);
-	}
 
 	private Set<Ingrediente> asIngredientes(Map<String, Double> insumoCantidades) {
 		if (insumoCantidades == null || insumoCantidades.size() <= 0) {
@@ -219,9 +194,6 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 	
 	public Integer saveInsumo(Insumo insumo) {
 		try {
-//			Insumo insumo = new Insumo();
-//			insumo.setNombre(insumoNombre.toLowerCase());
-//			insumo.setUnidadDeMedida(unidadMedida);
 			Integer newId = insumoDao.save(insumo);
 			
 			if (newId == null) {
