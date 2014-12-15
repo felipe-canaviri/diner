@@ -33,6 +33,18 @@ public class Insumo implements Comparable<Insumo>, Serializable {
 	private Set<Ingrediente> ingredientes;
 	private String nombre;
 	
+	
+	public Insumo() {
+		
+	}
+	
+	public Insumo(String nombre, String unidadDeMedida, Double precioUnitarioCompra) {
+		super();
+		this.nombre = nombre;
+		this.unidadDeMedida = unidadDeMedida;
+		this.precioUnitarioCompra = precioUnitarioCompra;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "insumoId")

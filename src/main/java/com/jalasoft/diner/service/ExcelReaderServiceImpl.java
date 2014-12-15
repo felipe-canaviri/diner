@@ -87,7 +87,8 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		// Iterate through each rows one by one
 		Iterator<Row> rowIterator = sheet.iterator();
 
-		Map<String, String> insumos = new HashMap<String, String>();
+		//Map<String, String> insumos = new HashMap<String, String>();
+		Map<String, Insumo> insumos = new HashMap<String, Insumo>();
 		while (rowIterator.hasNext()) {
 			Row row = rowIterator.next();
 
@@ -99,14 +100,16 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 			}
 
 			String insumoCell = row.getCell(5).getStringCellValue().trim();
+			insumoCell = sanitizeName(insumoCell.toLowerCase());
 			String unitMeasurementCell = row.getCell(7).getStringCellValue().trim();
+			Double precioUnitarioCompraCell = row.getCell(8).getNumericCellValue();
 
 			if (insumoCell == null || "".equals(insumoCell)) {
 				LOGGER.warn(String.format("The cell '%s' contains a null value for product", row.getRowNum()));
 				continue;
 			}
 			
-			insumos.put(sanitizeName(insumoCell.toLowerCase()), unitMeasurementCell);
+			insumos.put(insumoCell, new Insumo(insumoCell, unitMeasurementCell, precioUnitarioCompraCell));
 		}
 		
 		saveInsumos(insumos);
@@ -188,33 +191,33 @@ public class ExcelReaderServiceImpl implements ExcelReaderService {
 		return ingredientes;
 	}
 
-	public boolean saveInsumos(Map<String, String> insumos) {
+	public boolean saveInsumos(Map<String, Insumo> insumos) {
 		
-		for (Map.Entry<String, String> insumo : insumos.entrySet()) {
-			saveInsumo(insumo.getKey(), insumo.getValue());
+		for (Map.Entry<String, Insumo> insumo : insumos.entrySet()) {
+			saveInsumo(insumo.getValue());
 		}
 		
 		return true;
 	}
 	
-	public Integer saveInsumo(String insumoNombre, String unidadMedida) {
+	public Integer saveInsumo(Insumo insumo) {
 		try {
-			Insumo insumo = new Insumo();
-			insumo.setNombre(insumoNombre.toLowerCase());
-			insumo.setUnidadDeMedida(unidadMedida);
+//			Insumo insumo = new Insumo();
+//			insumo.setNombre(insumoNombre.toLowerCase());
+//			insumo.setUnidadDeMedida(unidadMedida);
 			Integer newId = insumoDao.save(insumo);
 			
 			if (newId == null) {
-				LOGGER.error(String.format("Error when storing '%s' - '%s'", insumoNombre, unidadMedida));
+				LOGGER.error(String.format("Error when storing '%s' - '%s'", insumo.getNombre(), insumo.getUnidadDeMedida()));
 				throw new RuntimeException();
 			}
 			
 			return newId;
 			
 		} catch (ConstraintViolationException e) {
-			LOGGER.warn(String.format("Already exists an Insumo with name '%s'. Ignore the current one. ", insumoNombre));
+			LOGGER.warn(String.format("Already exists an Insumo with name '%s'. Ignore the current one. ", insumo.getNombre()));
 		} catch (Exception e) {
-			LOGGER.error(String.format("Error when trying to store Insumo with name '%s' and unidadMedida '%s'", insumoNombre, unidadMedida));
+			LOGGER.error(String.format("Error when trying to store Insumo with name '%s' and unidadMedida '%s'", insumo.getNombre(), insumo.getUnidadDeMedida()));
 			throw e;
 		}
 
